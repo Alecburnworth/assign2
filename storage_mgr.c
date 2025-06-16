@@ -40,6 +40,9 @@ RC createPageFile (char *fileName) {
         // write the empty page
         fwrite(Page_Handle, sizeof(char), PAGE_SIZE, File_Handle.mgmtInfo);
 
+        int seek;
+        seek = fseek(File_Handle.mgmtInfo, 0, SEEK_END);
+
         // set the file handle data
         File_Handle.fileName = fileName;
         File_Handle.curPagePos = 0;  
@@ -74,6 +77,7 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
         fHandle->fileName = File_Handle.fileName;
         fHandle->curPagePos = File_Handle.curPagePos;
         fHandle->totalNumPages = File_Handle.totalNumPages;
+        fHandle->mgmtInfo = File_Handle.mgmtInfo;
 
         return RC_OK; 
     }
@@ -117,6 +121,7 @@ RC destroyPageFile (char *fileName) {
     } 
     // file doesn't exist
     else {
+        // printf("File not found Deleted!\n");
         return RC_FILE_NOT_FOUND;
     } 
 }
@@ -232,7 +237,7 @@ RC readPreviousBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
     }
     else{
         // call read block with previous page position
-        readBlock(pageNum, fHandle, memPage);
+        return readBlock(pageNum, fHandle, memPage);
     }
 }
 
@@ -253,7 +258,7 @@ RC readCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
     }
     else{
         // call read block with current file position
-        readBlock(pageNum, fHandle, memPage);
+        return readBlock(pageNum, fHandle, memPage);
     }
     
 }
@@ -276,7 +281,7 @@ RC readNextBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
     else{
         // call read block with pageNum equal to 
         // the next page
-        readBlock(pageNum, fHandle, memPage);
+        return readBlock(pageNum, fHandle, memPage);
     }
 }
 
@@ -367,7 +372,7 @@ RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
     int pageNum = File_Handle.curPagePos; 
     
     // call write function with pageNum equal to current position
-    writeBlock(pageNum, fHandle, memPage);
+    return writeBlock(pageNum, fHandle, memPage);
 
 }
 
@@ -451,7 +456,7 @@ RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle) {
             Page_Handle = (SM_PageHandle) calloc(buffer_size, sizeof(char));
 
             // write the empty page
-            fwrite(Page_Handle, sizeof(char), buffer_size, File_Handle.mgmtInfo);
+            int n = fwrite(Page_Handle, sizeof(char), buffer_size, File_Handle.mgmtInfo);
 
             // increase total page count to that we added
             File_Handle.totalNumPages += pages_needed; 
